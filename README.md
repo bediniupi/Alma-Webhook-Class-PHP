@@ -20,7 +20,7 @@ file_put_contents("filelog.txt", $webh->log, FILE_APPEND); // save log to a file
 ?>
 ```
 ## Prerequisites
-* PHP, Web Server 
+* PHP, Web Server HTTPS
 * Alma Ex Libris
 
 ## Authors
