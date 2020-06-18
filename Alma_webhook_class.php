@@ -8,8 +8,8 @@
  *  $webh = new almaWebhook('Secret'); // or $webh = new almaWebhook() if you place secret in class file directly;
  *  if ($webh->result) {
  *       //your code (use $webh->res_obj to collect data; if you prefer arrays, use $dataray = (array)$webh->res_obj, $web->result contains result as a string);
+ *       $action = $webh->res_obj->action // event type in Alma
  *       $webh->addLog("this is happening") // add info to log
- *       $webh->addLog($webh->sep) // add a separator to indentify better separate sessions  
  *   }  
  *  file_put_contents("filelog.txt", $webh->log, FILE_APPEND); // save log to a file
  * </code>
@@ -25,23 +25,22 @@ class almaWebhook {
     public $log;
     public $sep = "---------------";
     public function __construct($secret="") {
+        $this->addLog($this->sep);
         if ($secret) $this->secret = $secret;        
         if (isset($_GET['challenge'])) {
             echo '{"challenge":"'.$_GET['challenge'].'"}​';
             $this->addLog("Challenge Request [".$_GET['challenge']."]");
             $this->result = "";
-            return true;
+            return;
             } else {
             $this->result = file_get_contents('php://input');
             if (!isset($_SERVER['HTTP_X_EXL_SIGNATURE']) || !$this->valSign($this->result, $_SERVER['HTTP_X_EXL_SIGNATURE'])) {
                 $this->result = "";
-                $this->addLog("Invalid Signature\n".$this->sep);
-                header("HTTP/1.0 401 Invalid Signature");                
-                return false;
+                $this->addLog("Invalid Signature\n");
+                header('HTTP/1.1 401 Invalid Signature');                 
+                return;               
                 }
             $this->res_obj = $this->get_obj($this->result);
-            if ($this->res_obj == false) return false;
-            return true;
             }
     }    
     private function valSign($body, $sign) {
@@ -63,6 +62,7 @@ class almaWebhook {
                 break;
             default:
                 $this->addLog("Result type not recognized (first char:".$par.")");
+                $this->addLog("Source:\n".$this->result);
                 return false;
             }
         return $res_obj;
